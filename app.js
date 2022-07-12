@@ -11,12 +11,14 @@ const bodyparser = require("koa-bodyparser")
 // const logger = require("koa-logger")
 const log4js = require("./utils/log4j")
 
-const index = require("./routes/index")
 const users = require("./routes/users")
-
+const router = require("koa-router")()
+const jwt = require("jsonwebtoken")
+const koajwt = require("koa-jwt")
+const utils = require("./utils/utils")
 // error handler
 onerror(app)
-
+require("./config/db")
 // middlewares
 app.use(
   bodyparser({
@@ -24,6 +26,7 @@ app.use(
   })
 )
 app.use(json())
+
 // app.use(logger())
 app.use(require("koa-static")(__dirname + "/public"))
 
@@ -36,16 +39,30 @@ app.use(
 // logger
 app.use(async (ctx, next) => {
   // const start = new Date()
-  await next()
+  await next().catch(err => {
+    if (err.status == "401") {
+      ctx.status == 200
+      ctx.body = utils.fail("TOKEN认证失败", utils.CODE.AUTH_ERROR)
+    } else {
+      throw err
+    }
+  })
   log4js.info("log output")
   // const ms = new Date() - start
   // console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
-
+app.use(koajwt({ secret: "imooc" }).unless({ path: [/^\/api\/users\/login/] }))
+router.prefix("/api")
+router.get("/leave/count", ctx => {
+  // const token = ctx.request.headers.authorization.split(" ")[1]
+  // // 获取解析token字段
+  // const payLoad = jwt.verify(token, "imooc")
+  ctx.body = "body"
+})
+// 挂载user路由
+router.use(users.routes(), users.allowedMethods())
 // 加载routes
-app.use(index.routes(), index.allowedMethods())
-app.use(users.routes(), users.allowedMethods())
-
+app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on("error", (err, ctx) => {
   console.error("server error", err, ctx)
