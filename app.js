@@ -12,6 +12,7 @@ const bodyparser = require("koa-bodyparser")
 const log4js = require("./utils/log4j")
 // 登录
 const users = require("./routes/users")
+const menus = require("./routes/menus")
 const router = require("koa-router")()
 const jwt = require("jsonwebtoken")
 const koajwt = require("koa-jwt")
@@ -61,7 +62,9 @@ router.get("/leave/count", ctx => {
 })
 // 挂载user路由
 router.use(users.routes(), users.allowedMethods())
+// 挂载menu路由
 // 加载routes
+router.use(menus.routes(), menus.allowedMethods())
 app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on("error", (err, ctx) => {
