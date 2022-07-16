@@ -13,6 +13,7 @@ const log4js = require("./utils/log4j")
 // 登录
 const users = require("./routes/users")
 const menus = require("./routes/menus")
+const roles = require("./routes/roles")
 const router = require("koa-router")()
 const jwt = require("jsonwebtoken")
 const koajwt = require("koa-jwt")
@@ -52,6 +53,7 @@ app.use(async (ctx, next) => {
   // const ms = new Date() - start
   // console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
+// 挂载token
 app.use(koajwt({ secret: "imooc" }).unless({ path: [/^\/api\/users\/login/] }))
 router.prefix("/api")
 router.get("/leave/count", ctx => {
@@ -65,6 +67,7 @@ router.use(users.routes(), users.allowedMethods())
 // 挂载menu路由
 // 加载routes
 router.use(menus.routes(), menus.allowedMethods())
+router.use(roles.routes(), roles.allowedMethods())
 app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on("error", (err, ctx) => {

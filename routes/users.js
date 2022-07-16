@@ -20,7 +20,7 @@ router.post("/login", async ctx => {
         userName,
         userPwd,
       },
-      { userId: 1, userName: 1 }
+      "userId userName userEmail state role deptId roleList"
     )
     const data = res._doc
     // 生成token
@@ -29,7 +29,7 @@ router.post("/login", async ctx => {
         data,
       },
       "imooc",
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     )
     if (res) {
       data.token = token
@@ -123,7 +123,6 @@ router.post("/operate", async ctx => {
         ctx.body = utils.success({}, "用户创建成功!")
       } catch (error) {
         ctx.body = utils.fail(error.stack, "用户创建失败!")
-        console.log("@@@@", error.stack)
       }
     }
   } else {
