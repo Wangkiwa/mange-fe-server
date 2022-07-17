@@ -21,7 +21,6 @@ router.get("/list", async ctx => {
     if (roleName) params.roleName = roleName
     const query = Role.find(params)
     const list = await query.skip(skipIndex).limit(page.pageSize)
-    console.log("list@@@@@@@@@@@@@@@@@@@@@@@@@", list)
     const total = await Role.countDocuments(params)
     ctx.body = utils.success({
       list,

@@ -13,13 +13,16 @@ router.get("/list", async ctx => {
 })
 // 递归拼接树形列表
 function getTreeMenu(rootList, id, list) {
+  // 刚开始会先把最外层结构遍历出来
   for (let i = 0; i < rootList.length; i++) {
     let item = rootList[i]
+    // 第一次 null = null  数组中push的是最外层结构
     if (String(item.parentId.slice().pop()) == String(id)) {
       list.push(item._doc)
     }
   }
   list.map(item => {
+    // 追加children属性
     item.children = []
     getTreeMenu(rootList, item._id, item.children)
     if (item.children.length == 0) {

@@ -14,6 +14,7 @@ const log4js = require("./utils/log4j")
 const users = require("./routes/users")
 const menus = require("./routes/menus")
 const roles = require("./routes/roles")
+const depts = require("./routes/depts")
 const router = require("koa-router")()
 const jwt = require("jsonwebtoken")
 const koajwt = require("koa-jwt")
@@ -68,6 +69,7 @@ router.use(users.routes(), users.allowedMethods())
 // 加载routes
 router.use(menus.routes(), menus.allowedMethods())
 router.use(roles.routes(), roles.allowedMethods())
+router.use(depts.routes(), depts.allowedMethods())
 app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on("error", (err, ctx) => {
