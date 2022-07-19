@@ -1,3 +1,8 @@
+/*
+ * @Descripttion: 入口
+ * @Author: TaoWang
+ * @Date: 2022-07-09 13:48:04
+ */
 const Koa = require("koa")
 const app = new Koa()
 const views = require("koa-views")
@@ -15,6 +20,7 @@ const users = require("./routes/users")
 const menus = require("./routes/menus")
 const roles = require("./routes/roles")
 const depts = require("./routes/depts")
+const leave = require("./routes/leave")
 const router = require("koa-router")()
 const jwt = require("jsonwebtoken")
 const koajwt = require("koa-jwt")
@@ -70,6 +76,7 @@ router.use(users.routes(), users.allowedMethods())
 router.use(menus.routes(), menus.allowedMethods())
 router.use(roles.routes(), roles.allowedMethods())
 router.use(depts.routes(), depts.allowedMethods())
+router.use(leave.routes(), leave.allowedMethods())
 app.use(router.routes(), router.allowedMethods())
 // error-handling
 app.on("error", (err, ctx) => {

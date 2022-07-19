@@ -1,3 +1,8 @@
+/*
+ * @Descripttion:部门路由
+ * @Author: TaoWang
+ * @Date: 2022-07-17 19:27:08
+ */
 const router = require("koa-router")()
 const utils = require("../utils/utils")
 const Dept = require("../models/deptSchema")

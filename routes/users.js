@@ -1,5 +1,12 @@
+/*
+ * @Descripttion:用户路由
+ * @Author: TaoWang
+ * @Date: 2022-07-09 13:48:04
+ */
 const router = require("koa-router")()
 const User = require("../models/userSchema")
+const Menu = require("../models/menuSchema")
+const Role = require("../models/roleSchema")
 const utils = require("../utils/utils")
 const Counter = require("../models/counterSchema")
 const jwt = require("jsonwebtoken")
@@ -15,23 +22,23 @@ router.post("/login", async ctx => {
       2、{userId:1,_id:0}
       3、.select('userId')
     */
-    const res = await User.findOne(
+    let res = await User.findOne(
       {
         userName,
         userPwd,
       },
       "userId userName userEmail state role deptId roleList"
     )
-    const data = res._doc
-    // 生成token
-    const token = jwt.sign(
-      {
-        data,
-      },
-      "imooc",
-      { expiresIn: "24h" }
-    )
     if (res) {
+      let data = res._doc
+      // 生成token
+      const token = jwt.sign(
+        {
+          data,
+        },
+        "imooc",
+        { expiresIn: "24h" }
+      )
       data.token = token
       ctx.body = utils.success(data)
     } else {
@@ -111,7 +118,7 @@ router.post("/operate", async ctx => {
         const user = new User({
           userId: doc.sequence_value,
           userName,
-          userPwd: md5("123456"), //默认密码
+          userPwd: 123456, //默认密码
           userEmail,
           role: 1,
           job,
@@ -151,4 +158,58 @@ router.get("/all/list", async ctx => {
     ctx.body = utils.fail(error.stack)
   }
 })
+// 获取用户对应的权限菜单
+router.get("/getPermissionList", async ctx => {
+  let authorization = ctx.request.headers.authorization
+  let { data } = utils.decoded(authorization)
+  console.log("Data=>", data)
+  let menuList = await getMenuList(data.role, data.roleList)
+  let actionList = getActionList(JSON.parse(JSON.stringify(menuList)))
+  ctx.body = utils.success({ menuList, actionList })
+})
+async function getMenuList(userRole, roleKeys) {
+  let rootList = []
+  // 该地方无动态获取权限 userRole == 1 缺陷
+  if (userRole == 0 || userRole == 1) {
+    // 管理员--查询所有数据
+    rootList = (await Menu.find({})) || []
+  } else {
+    // 根据用户拥有的角色，获取权限列表
+    // 先查找用户对应的角色有哪些
+    let roleList = await Role.find({ _id: { $in: roleKeys } })
+    let permissionList = []
+    roleList.map(role => {
+      let { checkedKeys, halfCheckedKeys } = role.permissionList
+      permissionList = permissionList.concat([
+        ...checkedKeys,
+        ...halfCheckedKeys,
+      ])
+    })
+    permissionList = [...new Set(permissionList)]
+    // console.log("permissionList", permissionList)
+    rootList = await Menu.find({ _id: { $in: permissionList } })
+  }
+  return utils.getTreeMenu(rootList, null, [])
+}
+// 获取按钮
+function getActionList(list) {
+  const actionList = []
+  const deep = arr => {
+    while (arr.length) {
+      let item = arr.pop()
+      // 操作菜单是按钮
+      if (item.action) {
+        item.action.map(action => {
+          actionList.push(action.menuCode)
+        })
+      }
+      // 只有当有children和action不为true的时候递归
+      if (item.children && !item.action) {
+        deep(item.children)
+      }
+    }
+  }
+  deep(list)
+  return actionList
+}
 module.exports = router
