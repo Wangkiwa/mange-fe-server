@@ -162,7 +162,6 @@ router.get("/all/list", async ctx => {
 router.get("/getPermissionList", async ctx => {
   let authorization = ctx.request.headers.authorization
   let { data } = utils.decoded(authorization)
-  console.log("Data=>", data)
   let menuList = await getMenuList(data.role, data.roleList)
   let actionList = getActionList(JSON.parse(JSON.stringify(menuList)))
   ctx.body = utils.success({ menuList, actionList })
